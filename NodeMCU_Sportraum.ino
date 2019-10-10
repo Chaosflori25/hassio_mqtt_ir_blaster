@@ -9,12 +9,13 @@
 IRsend irsend(5);
 
 /*****************  WIFI AND CLOUDMQTT SETUP *****************************/
-#define wifi_ssid "BVSchmitz intern1"
-#define wifi_password "W3are54family"
-#define mqtt_server "192.168.178.5"
-#define mqtt_user "admin"
-#define mqtt_password "superkrassesMqttpwd"
-#define mqtt_client_name "sportraum_ir_remote"
+#define wifi_ssid "Wifi_ssid"
+#define wifi_password "Wifi_pwd"
+#define mqtt_server "IP"
+#define mqtt_user "user"
+#define mqtt_password "pwd"
+#define mqtt_client_name "name"
+#define topic_name
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -141,10 +142,10 @@ void loop() {
   }
   
   if (client.connected()) {
-    client.subscribe("Sportraum/Tv_state");
-    client.subscribe("Sportraum/Tv_input");
-    client.subscribe("Sportraum/Av_input");
-    client.subscribe("Sportraum/Av_turn_off");
+    client.subscribe("topic_name/Tv_state");
+    client.subscribe("topic_name/Tv_input");
+    client.subscribe("topic_name/Av_input");
+    client.subscribe("topic_name/Av_turn_off");
     callback;
     }
 }
