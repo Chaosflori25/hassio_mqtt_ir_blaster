@@ -3,8 +3,11 @@
 I've replaced 2 remotes(Lg TV & Harman/Kardon AVR 300 RDS.
 The code is very specific for my use case but could be modified to fit your Needs.
 I've added the mqtt commands to hassio and created buttons to control it via App. The code for Home assistant is in the Hassio.yaml
+# Hardware
+First connect the NodeMCU to the Pins like I did, or change them in the CODE.
+
+SC1.png
 # Code
-First connect the NodeMCU to the Pins like I did, or change them in the Arduino code.
 Then install the Librarys that you haven't installed and the ESP8266 boardmanager:
 
 *Esp8266 Board Manager Github*
@@ -39,6 +42,7 @@ You can change the icon that Home Assistant shows to any icon you like in the MD
 
 https://materialdesignicons.com/
 
+SC2.png
 # Questions
 Please create an issue if you have any questions/suggestions for improvements or if you find any bugs!
 
