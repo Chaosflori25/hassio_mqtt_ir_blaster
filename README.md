@@ -14,3 +14,7 @@ Hope you like the program as much as I've enjoyed creating it!
 Many thanks,
 
 Chaosflori25
+
+Simple Addon for hassio to change the config.yaml: https://www.home-assistant.io/addons/configurator
+#install it and press the folder icon in the top left corner, then select configuration.yaml then paste this code in it and change everything how you want and like it ;-)
+#if you need help create an issue and I will try to help you ASAP.
