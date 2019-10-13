@@ -1,0 +1,109 @@
+#add this to the configuration.yaml in hassio. Simple Addon for hassio to change the config.yaml: https://www.home-assistant.io/addons/configurator
+#install it and press the folder icon in the top left corner, then select configuration.yaml then paste this code in it and change everything how you want and like it ;-)
+#if you need help create an issue and I will try to help you ASAP.
+
+mqtt:
+    broker: IP
+    port: Port
+    username: "user"
+    password: "pwd"
+
+#switch1
+switch: 
+  - platform: mqtt
+    name: "TV On Off"
+    icon: mdi:power
+#you can change the icon to any icon you like in the MDI Icon Library
+    state_topic: "Sportraum/Tv_state"
+    command_topic: "Sportraum/Tv_state"
+    payload_on: "1"
+    payload_off: "0"
+    state_on: "1"
+    state_off: "0"
+    retain: true
+#switch2
+  - platform: mqtt
+    name: "TV Input"
+    icon: mdi:ethernet
+    state_topic: "Sportraum/Tv_input"
+    command_topic: "Sportraum/Tv_input"
+    payload_on: "1"
+    payload_off: "0"
+    state_on: "1"
+    state_off: "0"
+    retain: true
+#switch3
+  - platform: mqtt
+    name: "AV Input"
+    icon: mdi:ethernet
+    state_topic: "Sportraum/Av_input"
+    command_topic: "Sportraum/Av_input"
+    payload_on: "2"
+    payload_off: "1"
+    state_on: "2"
+    state_off: "1"
+    retain: true
+#switch4
+- platform: mqtt
+    name: "AV On/Off"
+    icon: mdi:power
+    state_topic: "Sportraum/Av_turnoff"
+    command_topic: "Sportraum/Av_turnoff"
+    payload_on: "1"
+    payload_off: "0"
+    state_on: "1"
+    state_off: "0"
+    retain: true
+  - platform: mqtt
+    name: "AV Volume +5"
+    icon: mdi:volume-plus
+    state_topic: "Sportraum/Av_volume"
+    command_topic: "Sportraum/Av_volume"
+    payload_on: "+"
+    payload_off: "6"
+    state_on: "+"
+    state_off: "6"
+    retain: true
+#switch5
+- platform: mqtt
+    name: "AV Volume -5"
+    icon: mdi:volume-minus
+    state_topic: "Sportraum/Av_volume"
+    command_topic: "Sportraum/Av_volume"
+    payload_on: "-"
+    payload_off: "5"
+    state_on: "-"
+    state_off: "5"
+    retain: true
+  - platform: mqtt
+    name: "AV Volume +2"
+    icon: mdi:volume-plus
+    state_topic: "Sportraum/Av_volume"
+    command_topic: "Sportraum/Av_volume"
+    payload_on: "1"
+    payload_off: "0"
+    state_on: "1"
+    state_off: "0"
+    retain: true
+#switch6
+- platform: mqtt
+    name: "AV Volume -2"
+    icon: mdi:volume-minus
+    state_topic: "Sportraum/Av_volume"
+    command_topic: "Sportraum/Av_volume"
+    payload_on: "2"
+    payload_off: "3"
+    state_on: "2"
+    state_off: "3"
+    retain: true
+#switch7
+- platform: mqtt
+    name: "AV Speaker"
+    icon: mdi:volume-low
+    state_topic: "Sportraum/Av_speakers"
+    command_topic: "Sportraum/Av_speakers"
+    payload_on: "0"
+    payload_off: "1"
+    state_on: "0"
+    state_off: "1"
+    retain: true
