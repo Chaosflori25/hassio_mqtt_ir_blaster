@@ -11,7 +11,6 @@ switch:
   - platform: mqtt
     name: "TV On Off"
     icon: mdi:power
-#you can change the icon to any icon you like in the MDI Icon Library
     state_topic: "Sportraum/Tv_state"
     command_topic: "Sportraum/Tv_state"
     payload_on: "1"
