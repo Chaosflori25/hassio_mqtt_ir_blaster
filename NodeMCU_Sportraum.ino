@@ -2,37 +2,26 @@
 #include <ESP8266WiFi.h>
 #include <IRremoteESP8266.h>
 #include <PubSubClient.h>
-#include <IRsend.h>
 #include <Arduino.h>
 #include <ArduinoJson.h>
+#include <IRsend.h>
 
-IRsend irsend(5);
+const uint16_t kIrLed = 14;  // ESP GPIO pin to use. Recommended: 4 (D2).
+IRsend irsend(kIrLed);
 
 /*****************  WIFI AND CLOUDMQTT SETUP *****************************/
-#define wifi_ssid "Wifi_ssid"
-#define wifi_password "Wifi_pwd"
-#define mqtt_server "IP"
+#define wifi_ssid "ssid"
+#define wifi_password "pwd"
+#define mqtt_server "Ip"
 #define mqtt_user "user"
 #define mqtt_password "pwd"
 #define mqtt_client_name "name"
-#define topic_name
+#define Relais Relais Pin // I wanted an Relay to control an other thing
+
 
 WiFiClient espClient;
 PubSubClient client(espClient);
-long lastMsg = 0;
-char msg[50];
-int value = 0;
 
-/*****************  GLOBAL VARIABLES  ************************************/
-
-
-#define TV_onoff "button/tv_state"
-#define TV_input "switch/tv_input"
-#define TV_ok "ircode"
-#define AV_Input "switch/av_input"
-#define AV_reciever "button/av_off"
-#define AV_Input "tv_input_tv"
-bool boot = true;
 
 /*****************  SYSTEM FUNCTIONS  *************************************/
 
@@ -55,7 +44,7 @@ void setup_wifi() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 }
-
+/*****************  RECONNECT  ********************************************/
 void reconnect() {
   // Loop until we're reconnected
       if(WiFi.status() != WL_CONNECTED)
@@ -67,23 +56,12 @@ void reconnect() {
       while (!client.connected()) {
        Serial.print("Attempting MQTT connection...");
          // Attempt to connect
-      if (client.connect(mqtt_client_name, mqtt_user, mqtt_password)) {
-/**********Test*****/        
+      if (client.connect(mqtt_client_name, mqtt_user, mqtt_password)) 
+    {    
        Serial.println("MQTT connected");
-      if(boot == true)
-      {
-        client.publish("ADAFRUIT_USER/feeds/status","Rebooted");
-        boot = false;
-      }
-      if(boot == false)
-      {
-        client.publish("ADAFRUIT_USER/feeds/status","Reconnected"); 
-      }
-      client.subscribe("ADAFRUIT_USER/feeds/bells");
+       client.subscribe("Sportraum/#");
     } 
-  }
-
-    } else {
+    else {
 
       Serial.print("MQTT failed, rc=");
       Serial.print(client.state());
@@ -96,56 +74,194 @@ void reconnect() {
 }
 
 
-void callback(char* topic, byte * payload, unsigned int length) {
-    
-    if (strcmp(topic, "tv_state") == 0) {
-      irsend.sendNEC(0x20DF10EF, 32);// LG Power
-      Serial.println("tv_state = 1");
-      delay(100);
-    }
 
-    if (strcmp(topic, "tv_input") == 0) {
-      irsend.sendNEC(0x20DFD02F, 32); // LG Input
-      delay(300);
-      irsend.sendNEC(0x20DFD02F, 32);// LG Input
-      delay(300);
-      irsend.sendNEC(0x20DF22DD, 32);// LG OK
-      Serial.println("tv_input = 1");
-      delay(100);
-    }
+/*****************  TOPICS  ********************************************/
 
-    if (strcmp(topic, "av_input") == 0) {
-      Serial.println("av_input = 1");
-      delay(200);
-    }
-
-
-    if (strcmp(topic, "av_turn_off") == 0) {
-      irsend.sendNEC(0x10EF906, 32);// AV Power
-      Serial.println("av_turn_off = 1");
-      delay(100);
-    }
+void callback(char* topic, byte* payload, unsigned int length) {
+ Serial.print("Message arrived [");
+ Serial.print(topic);
+ Serial.print("] ");
+ /****TOPIC REQUEST THROUGH STRCMP****/
+ if ((strcmp(topic, "Sportraum/Tv_state") == 0) && (payload[0] == '1')) {
+    irsend.sendNEC(0x20DF10EF, 32);// LG Power ON
+    Serial.println("1_On");
+   }
+  if ((strcmp(topic, "Sportraum/Tv_state") == 0) && (payload[0] == '0')) {
+    irsend.sendNEC(0x20DF10EF, 32);// LG Power OFF
+    Serial.println("1_Off");
+   }
+  if ((strcmp(topic, "Sportraum/Tv_input") == 0) && (payload[0] == '1')) {
+    Serial.println("2_On");
+    irsend.sendNEC(0x20DFD02F, 32); // LG Input Select
+    delay(500);
+    irsend.sendNEC(0x20DFD02F, 32);// LG Input Select
+    delay(500);
+    irsend.sendNEC(0x20DF22DD, 32);// LG OK
+    Serial.println("tv_input = 1");
+    delay(100);   
+   }
+  if ((strcmp(topic, "Sportraum/Tv_input") == 0) && (payload[0] == '0')) {
+    Serial.println("2_0ff");
+    irsend.sendNEC(0x20DFD02F, 32); // LG Input Select
+    delay(500);
+    irsend.sendNEC(0x20DFD02F, 32);// LG Input Select
+    delay(500);
+    irsend.sendNEC(0x20DF22DD, 32);// LG OK
+    delay(100);   
+   }
+   if ((strcmp(topic, "Sportraum/Av_input") == 0) && (payload[0] == '1')) {  //Input Tape
+    Serial.println("3_Inp.");
+      irsend.sendNEC(0x10E53AC, 32); // HK Video 1
+      delay(750);
+      irsend.sendNEC(0x414E2AD5, 32);// HK DIGI.Sel.
+      delay(500);
+      irsend.sendNEC(0x414E59A6, 32);// HK DOWN
+      delay(500);
+      irsend.sendNEC(0x414E59A6, 32);// HK DOWN
+      delay(500);
+      irsend.sendNEC(0x414E21DE, 32);// HK OK
+      irsend.sendNEC(0x414E21DE, 32);// HK OK
+      irsend.sendNEC(0x414E21DE, 32);// HK OK
+      delay(400);
+      irsend.sendNEC(0x10E33CC, 32); // HK Tape
+      delay(750);   
+   }
+  if ((strcmp(topic, "Sportraum/Av_input") == 0) && (payload[0] == '2')) {   //Input Video
+    Serial.println("3_Inp.2");
+    irsend.sendNEC(0x10E53AC, 32); // HK Video 1
+    delay(750);
+    irsend.sendNEC(0x414E2AD5, 32);// HK DIGI.Sel.
+    delay(400);
+    irsend.sendNEC(0x414E718E, 32);// HK Up
+    delay(400);
+    irsend.sendNEC(0x414E718E, 32);// HK UP
+    delay(400);
+    irsend.sendNEC(0x414E21DE, 32);// HK OK
+    irsend.sendNEC(0x414E21DE, 32);// HK OK
+    irsend.sendNEC(0x414E21DE, 32);// HK OK
+    delay(750);
+   }
+   if ((strcmp(topic, "Sportraum/Av_turnoff") == 0) && (payload[0] == '1')) {
+    Serial.println("4_On");
+    irsend.sendNEC(0x10E53AC, 32); // HK Video 1
+    delay(500);   
+   }
+  if ((strcmp(topic, "Sportraum/Av_turnoff") == 0) && (payload[0] == '0')) {
+    Serial.println("4_Off");
+    irsend.sendNEC(0x10EF906, 32);// AV Power
+   }
+   if ((strcmp(topic, "Sportraum/Av_volume") == 0) && (payload[0] == '+')) {
+    Serial.println("4_On");
+    irsend.sendNEC(0x10EE31C, 32); // HK Video 1 to Wake up Reciever
+    delay(500);   
+   }
+  if ((strcmp(topic, "Sportraum/Av_volume") == 0) && (payload[0] == '-')) {
+    Serial.println("4_Off");
+    irsend.sendNEC(0x10E13EC, 32);// AV Vol +5
+    delay(100);
+    irsend.sendNEC(0x10E13EC, 32);// AV Vol +5
+    delay(100);
+    irsend.sendNEC(0x10E13EC, 32);// AV Vol +5
+    delay(100);
+    irsend.sendNEC(0x10E13EC, 32);// AV Vol +5
+    delay(100);
+    irsend.sendNEC(0x10E13EC, 32);// AV Vol +5
+    delay(500);
   }
+  if ((strcmp(topic, "Sportraum/Av_volume") == 0) && (payload[0] == '5')) {
+    Serial.println("4_Off");
+    irsend.sendNEC(0x10E13EC, 32);// AV Vol +5
+    delay(100);
+    irsend.sendNEC(0x10E13EC, 32);// AV Vol +5
+    delay(100);
+    irsend.sendNEC(0x10E13EC, 32);// AV Vol +5
+    delay(100);
+    irsend.sendNEC(0x10E13EC, 32);// AV Vol +5
+    delay(100);
+    irsend.sendNEC(0x10E13EC, 32);// AV Vol +5
+    delay(500);
+  }
+    if ((strcmp(topic, "Sportraum/Av_volume") == 0) && (payload[0] == '+')) {
+    Serial.println("4_On");
+    irsend.sendNEC(0x10EE31C, 32); // AV Vol -5
+    delay(100);
+    irsend.sendNEC(0x10EE31C, 32); // AV Vol -5
+    delay(100);
+    irsend.sendNEC(0x10EE31C, 32); // AV Vol -5
+    delay(100);
+    irsend.sendNEC(0x10EE31C, 32); // AV Vol -5
+    delay(100);
+    irsend.sendNEC(0x10EE31C, 32); // AV Vol -5
+    delay(500);   
+   }
+   if ((strcmp(topic, "Sportraum/Av_volume") == 0) && (payload[0] == '6')) {
+    Serial.println("4_On");
+    irsend.sendNEC(0x10EE31C, 32); // AV Vol -5
+    delay(100);
+    irsend.sendNEC(0x10EE31C, 32); // AV Vol -5
+    delay(100);
+    irsend.sendNEC(0x10EE31C, 32); // AV Vol -5
+    delay(100);
+    irsend.sendNEC(0x10EE31C, 32); // AV Vol -5
+    delay(100);
+    irsend.sendNEC(0x10EE31C, 32); // AV Vol -5
+    delay(500);   
+   }
+  if ((strcmp(topic, "Sportraum/Av_volume") == 0) && (payload[0] == '2')) {
+    Serial.println("4_Off");
+    irsend.sendNEC(0x10E13EC, 32);// AV Vol +1
+    delay(100);
+    irsend.sendNEC(0x10E13EC, 32);// AV Vol +1
+    delay(500);
+   }
+   if ((strcmp(topic, "Sportraum/Av_volume") == 0) && (payload[0] == '3')) {
+    Serial.println("4_Off");
+    irsend.sendNEC(0x10E13EC, 32);// AV Vol +1
+    delay(100);
+    irsend.sendNEC(0x10E13EC, 32);// AV Vol +1
+    delay(500);
+   }
+  if ((strcmp(topic, "Sportraum/Av_volume") == 0) && (payload[0] == '0')) {
+    Serial.println("4_Off");
+    irsend.sendNEC(0x10EE31C, 32); // AV Vol -1
+    delay(100);
+    irsend.sendNEC(0x10EE31C, 32);// AV Vol -1
+    delay(500);
+  }
+    if ((strcmp(topic, "Sportraum/Av_volume") == 0) && (payload[0] == '1')) {
+    Serial.println("4_Off");
+    irsend.sendNEC(0x10EE31C, 32); // AV Vol -1
+    delay(100);
+    irsend.sendNEC(0x10EE31C, 32);// AV Vol -1
+    delay(500);
+ }
+ if ((strcmp(topic, "Sportraum/Av_speakers") == 0) && (payload[0] == '0')) {
+    Serial.println("5_Off");
+    digitalWrite(Relais, HIGH);
+    delay(100);
+  }
+    if ((strcmp(topic, "Sportraum/Av_speakers") == 0) && (payload[0] == '1')) {
+    Serial.println("5_On");
+    digitalWrite(Relais, LOW);
+    delay(100);
+ }
+}
+
+
 /****************   Setup  ***********************************************/
 void setup() {
   Serial.begin(115200);
-  pinMode(IRpin, OUTPUT);
-  WiFi.setSleepMode(WIFI_NONE_SLEEP);
+  pinMode(Relais, OUTPUT); 
+  irsend.begin();
   setup_wifi();
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
+  
 }
 /****************   Loop   ***********************************************/
 void loop() {
   if (!client.connected()) {
     reconnect();
   }
-  
-  if (client.connected()) {
-    client.subscribe("topic_name/Tv_state");
-    client.subscribe("topic_name/Tv_input");
-    client.subscribe("topic_name/Av_input");
-    client.subscribe("topic_name/Av_turn_off");
-    callback;
-    }
+  client.loop();
 }
