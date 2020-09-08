@@ -43,7 +43,7 @@ You can change the icon that Home Assistant shows to any icon you like in the MD
 
 https://materialdesignicons.com/
 
-<img src="https://github.com/Chaosflori25/hassio_mqtt_ir_blaster/blob/master/SC2.jpg" alt="Bord Manager" width=400>
+<img src="https://github.com/Chaosflori25/hassio_mqtt_ir_blaster/blob/master/SC2.jpg" alt="Bord Manager" width=800>
 
 # Questions
 Please create an issue if you have any questions/suggestions for improvements or if you find any bugs!
